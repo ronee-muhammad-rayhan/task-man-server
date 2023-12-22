@@ -48,7 +48,7 @@ async function run() {
       const token = req.headers.authorization.split(" ")[1];
       jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
         if (err) {
-          return res.status(401).send({ message: "unauthorized access" });
+          return res.status(401).send({ message: "Unauthorized Access" });
         }
         req.decoded = decoded;
         next();
@@ -56,20 +56,27 @@ async function run() {
     };
 
     // task related api
-    app.get("/tasks", async (req, res) => {
-      //   const query = { email: "tour-guide" };
-      const result = await taskCollection.find(/* query */).toArray();
+    app.get("/tasks", verifyToken, async (req, res) => {
+      const query = { email: req.decoded.email };
+      const result = await taskCollection.find(query).toArray();
       console.log(result);
       res.send(result);
     });
 
-    app.post("/tasks", async (req, res) => {
+    app.get("/tasks/:id", verifyToken, async (req, res) => {
+      const query = { _id: new ObjectId(req.params.id) };
+      const result = await taskCollection.findOne(query);
+      console.log(result);
+      res.send(result);
+    });
+
+    app.post("/tasks", verifyToken, async (req, res) => {
       const task = req.body;
       const result = await taskCollection.insertOne(task);
       res.send(result);
     });
 
-    app.patch("/tasks/:id", async (req, res) => {
+    app.patch("/tasks/:id", verifyToken, async (req, res) => {
       const item = req.body;
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -107,9 +114,9 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.send("Tourist Guide Server is running");
+  res.send("Task Man Server is running");
 });
 
 app.listen(port, () => {
-  console.log(`B8A12-Server is running on port ${port}`);
+  console.log(`TaskMan-Server is running on port ${port}`);
 });
