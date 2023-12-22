@@ -63,7 +63,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/tasks/:id", verifyToken, async (req, res) => {
+    app.get("/tasks/:id", async (req, res) => {
       const query = { _id: new ObjectId(req.params.id) };
       const result = await taskCollection.findOne(query);
       console.log(result);
